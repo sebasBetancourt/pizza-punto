@@ -1,4 +1,4 @@
-import { connection } from "../persistence/db";
+import { connection } from "../persistence/db.js";
 
 export async function pedidoModel(){
     const db = await connection();

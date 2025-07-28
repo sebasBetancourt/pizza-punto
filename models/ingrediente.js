@@ -1,6 +1,6 @@
-import { connection } from "../persistence/db";
+import { connection } from "../persistence/db.js";
 
-export async function IngredienteModel() {
+export async function ingredienteModel() {
   const db = await connection();
   return db.collection('ingredientes');
 }
