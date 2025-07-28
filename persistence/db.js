@@ -1,6 +1,6 @@
 import { MongoClient } from 'mongodb';
 
-const uri = 'mongodb://localhost:27017';
+const uri = 'mongodb+srv://sebas:hola123@sebas.appw5ak.mongodb.net/';
 const dbName = 'pizza_y_punto';
 
 let client;
@@ -8,7 +8,7 @@ let db;
 
 export async function connection() {
   if (db) return db;
-  client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+  client = new MongoClient(uri);
   await client.connect();
   db = client.db(dbName);
   console.log('Conectado a MongoDB');

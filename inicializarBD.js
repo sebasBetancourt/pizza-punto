@@ -1,22 +1,20 @@
 const { MongoClient } = require('mongodb');
 
 async function initDB() {
-  const uri = 'mongodb://localhost:27017';
+  const uri = 'mongodb+srv://sebas:hola123@sebas.appw5ak.mongodb.net/';
   const dbName = 'pizza_y_punto';
-  const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+  const client = new MongoClient(uri);
 
   try {
     await client.connect();
     const db = client.db(dbName);
 
-    // Limpiar colecciones existentes
-    await db.collection('ingredientes').deleteMany({});
-    await db.collection('pizzas').deleteMany({});
-    await db.collection('pedidos').deleteMany({});
-    await db.collection('repartidores').deleteMany({});
-    await db.collection('clientes').deleteMany({});
+    await db.collection('ingredientes').drop();
+    await db.collection('pizzas').drop();
+    await db.collection('pedidos').drop();
+    await db.collection('repartidores').drop();
+    await db.collection('clientes').drop();
 
-    // Insertar ingredientes
     const ingredientes = await db.collection('ingredientes').insertMany([
       { nombre: 'Queso Mozzarella', tipo: 'queso', stock: 100 },
       { nombre: 'Salsa de Tomate', tipo: 'salsa', stock: 50 },
@@ -26,7 +24,6 @@ async function initDB() {
     ]);
     const ingredienteIds = ingredientes.insertedIds;
 
-    // Insertar pizzas
     const pizzas = await db.collection('pizzas').insertMany([
       {
         nombre: 'Margarita',
@@ -60,21 +57,18 @@ async function initDB() {
     ]);
     const pizzaIds = pizzas.insertedIds;
 
-    // Insertar clientes
     const clientes = await db.collection('clientes').insertMany([
       { nombre: 'Juan Pérez', telefono: '123456789', direccion: 'Calle 123' },
       { nombre: 'María Gómez', telefono: '987654321', direccion: 'Avenida 456' }
     ]);
     const clienteIds = clientes.insertedIds;
 
-    // Insertar repartidores
     const repartidores = await db.collection('repartidores').insertMany([
       { nombre: 'Ana López', zona: 'Centro', estado: 'disponible' },
       { nombre: 'Carlos Ruiz', zona: 'Norte', estado: 'disponible' }
     ]);
     const repartidorIds = repartidores.insertedIds;
 
-    // Insertar pedidos de prueba
     await db.collection('pedidos').insertMany([
       {
         clienteId: clienteIds[0],
@@ -93,10 +87,6 @@ async function initDB() {
     ]);
 
     console.log('Base de datos inicializada con éxito');
-    console.log('IDs de ingredientes:', ingredienteIds);
-    console.log('IDs de pizzas:', pizzaIds);
-    console.log('IDs de clientes:', clienteIds);
-    console.log('IDs de repartidores:', repartidorIds);
   } catch (error) {
     console.error('Error al inicializar la base de datos:', error);
   } finally {

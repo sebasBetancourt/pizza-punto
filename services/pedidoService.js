@@ -10,14 +10,13 @@ import inquirer from 'inquirer';
 export async function realizarPedido() {
   const session = (await connection()).client.startSession();
   try {
-    await session.withTransaction(async () => {
+    await session.withTransaction(async () => { //Se ejecuta la sesion dentro de la transaccion
       const ingredienteModelVar = await ingredienteModel();
       const pizzaModelVar = await pizzaModel();
       const pedidoModelVar = await pedidoModel();
       const repartidorModelVar = await repartidorModel();
       const clienteModelVar = await clienteModel();
 
-      // 1. Buscar cliente por nombre
       const { nombreCliente } = await inquirer.prompt([
         {
           type: 'input',
@@ -37,7 +36,7 @@ export async function realizarPedido() {
 
       console.log('\nCoincidencias de clientes:');
       clientes.forEach((c, index) => {
-        console.log(`${index + 1}. ${c.nombre} (Dirección: ${c.direccion}, Teléfono: ${c.telefono})`);
+        console.log(`${index + 1}. ${c.nombre} Teléfono: ${c.telefono}`);
       });
 
       const { selectedCliente } = await inquirer.prompt([
@@ -46,7 +45,7 @@ export async function realizarPedido() {
           name: 'selectedCliente',
           message: 'Selecciona un cliente:',
           choices: clientes.map(c => ({
-            name: `${c.nombre} (Dirección: ${c.direccion})`,
+            name: `${c.nombre}`,
             value: c._id.toString()
           }))
         }
@@ -54,7 +53,10 @@ export async function realizarPedido() {
       const clienteId = new ObjectId(selectedCliente);
       console.log(`Cliente seleccionado: ${clientes.find(c => c._id.toString() === selectedCliente).nombre}`);
 
-      // 2. Seleccionar pizzas
+
+
+
+
       const pizzaIds = [];
       while (true) {
         const { nombrePizza } = await inquirer.prompt([
@@ -111,7 +113,8 @@ export async function realizarPedido() {
         throw new Error('No se seleccionaron pizzas para el pedido');
       }
 
-      // 3. Obtener pizzas y verificar ingredientes
+
+
       const pizzas = await pizzaModelVar
         .find({ _id: { $in: pizzaIds.map(id => new ObjectId(id)) } })
         .toArray();
@@ -126,7 +129,6 @@ export async function realizarPedido() {
         }
       }
 
-      // 4. Verificar stock de ingredientes
       for (const [nombre, cantidad] of Object.entries(ingredientesNecesarios)) {
         const ingrediente = await ingredienteModelVar.findOne({ nombre });
         if (!ingrediente || ingrediente.stock < cantidad) {
@@ -134,7 +136,6 @@ export async function realizarPedido() {
         }
       }
 
-      // 5. Restar del inventario
       for (const [nombre, cantidad] of Object.entries(ingredientesNecesarios)) {
         await ingredienteModelVar.updateOne(
           { nombre },
@@ -143,10 +144,8 @@ export async function realizarPedido() {
         );
       }
 
-      // 6. Calcular total del pedido
       const total = pizzas.reduce((sum, pizza) => sum + pizza.precio, 0);
 
-      // 7. Asignar repartidor
       const repartidor = await repartidorModelVar.findOneAndUpdate(
         { estado: 'disponible' },
         { $set: { estado: 'ocupado' } },
@@ -154,11 +153,14 @@ export async function realizarPedido() {
       );
       if (!repartidor) throw new Error('No hay repartidores disponibles');
 
-      // 8. Registrar pedido
+
+
+
+
       const pedido = {
         clienteId: new ObjectId(clienteId),
         pizzas: pizzaIds.map(id => new ObjectId(id)),
-        total,
+        total: total,
         fecha: new Date(),
         repartidorAsignado: repartidor._id
       };
