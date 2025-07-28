@@ -1,16 +1,6 @@
+import { connection } from "../persistence/db";
 
-class Pizza{
-    constructor(nombre, categoria, precio, ingredientes){
-        this.nombre = nombre;
-        this.categoria = categoria;
-        this.precio = precio;
-        this.ingredientes = ingredientes
-    }
-
-
-    mostrarPizza(){
-        console.log('Nombre: '+this.nombre, 'Tipo: '+this.categoria, 'Stock: '+this.precio, 'Ingredientes: '+this.ingredientes);
-    }
+export async function pizzaModel(){
+    const db = await connection();
+    return db.collection('pizzas')
 }
-
-module.exports = Pizza
